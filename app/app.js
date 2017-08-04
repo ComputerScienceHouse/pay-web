@@ -14,7 +14,11 @@ import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
 import { applyRouterMiddleware, Router, browserHistory } from 'react-router';
 import { syncHistoryWithStore } from 'react-router-redux';
+import FontFaceObserver from 'fontfaceobserver';
 import { useScroll } from 'react-router-scroll';
+import createMuiTheme from 'material-ui/styles/theme';
+import createPalette from 'material-ui/styles/palette';
+import { MuiThemeProvider } from 'material-ui/styles';
 import 'sanitize.css/sanitize.css';
 
 // Import root app
@@ -44,6 +48,56 @@ import './global-styles';
 // Import root routes
 import createRoutes from './routes';
 
+// Observe loading of Roboto
+const robotoObserver = new FontFaceObserver('Roboto', {});
+
+// When Roboto is loaded, add a font-family using Roboto to the body
+robotoObserver.load().then(() => {
+  document.body.classList.add('fontLoaded');
+}, () => {
+  document.body.classList.remove('fontLoaded');
+});
+
+// CSH Theme
+const CSHTheme = createMuiTheme({
+  palette: createPalette({
+    primary: {
+      50: '#f6e3f0',
+      100: '#e7bad8',
+      200: '#d88cbf',
+      300: '#c85ea5',
+      400: '#bc3c91',
+      500: '#b0197e',
+      600: '#a91676',
+      700: '#a0126b',
+      800: '#970e61',
+      900: '#87084e',
+      A100: '#ffb5da',
+      A200: '#ff82c1',
+      A400: '#ff4fa8',
+      A700: '#ff369b',
+      contrastDefaultColor: 'light',
+    },
+    accent: {
+      50: '#fbe4ea',
+      100: '#f6bbcb',
+      200: '#f08ea9',
+      300: '#ea6086',
+      400: '#e63e6c',
+      500: '#e11c52',
+      600: '#dd194b',
+      700: '#d91441',
+      800: '#d51138',
+      900: '#cd0928',
+      A100: '#fff7f8',
+      A200: '#ffc4cb',
+      A400: '#ff919e',
+      A700: '#ff7888',
+      contrastDefaultColor: 'light',
+    },
+  }),
+});
+
 // Create redux store with history
 // this uses the singleton browserHistory provided by react-router
 // Optionally, this could be changed to leverage a created history
@@ -52,8 +106,8 @@ const initialState = {};
 const store = configureStore(initialState, browserHistory);
 
 // Sync history and store, as the react-router-redux reducer
-// is under the non-default key ("routing"), selectLocationState
-// must be provided for resolving how to retrieve the "route" in the state
+// is under the non-default key ('routing'), selectLocationState
+// must be provided for resolving how to retrieve the 'route' in the state
 const history = syncHistoryWithStore(browserHistory, store, {
   selectLocationState: makeSelectLocationState(),
 });
@@ -68,15 +122,17 @@ const render = (messages) => {
   ReactDOM.render(
     <Provider store={store}>
       <LanguageProvider messages={messages}>
-        <Router
-          history={history}
-          routes={rootRoute}
-          render={
-            // Scroll to top when going to a new page, imitating default browser
-            // behaviour
-            applyRouterMiddleware(useScroll())
-          }
-        />
+        <MuiThemeProvider theme={CSHTheme}>
+          <Router
+            history={history}
+            routes={rootRoute}
+            render={
+              // Scroll to top when going to a new page, imitating default browser
+              // behaviour
+              applyRouterMiddleware(useScroll())
+            }
+          />
+        </MuiThemeProvider>
       </LanguageProvider>
     </Provider>,
     document.getElementById('app')
